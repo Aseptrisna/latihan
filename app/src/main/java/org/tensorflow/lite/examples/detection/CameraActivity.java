@@ -17,6 +17,7 @@
 package org.tensorflow.lite.examples.detection;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -34,14 +35,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Message;
 import android.os.Trace;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 
 
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
@@ -58,6 +62,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.nio.ByteBuffer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
+import org.tensorflow.lite.examples.detection.Server.MyRmq;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
 
@@ -65,7 +73,7 @@ public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
         Camera.PreviewCallback,
         CompoundButton.OnCheckedChangeListener,
-        View.OnClickListener {
+        View.OnClickListener, MyRmq {
     private static final Logger LOGGER = new Logger();
 
     private static final int PERMISSIONS_REQUEST = 1;
@@ -88,7 +96,7 @@ public abstract class CameraActivity extends AppCompatActivity
     private LinearLayout gestureLayout;
     private BottomSheetBehavior<LinearLayout> sheetBehavior;
 
-    protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView;
+    protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView,valueSuhu;
     protected ImageView bottomSheetArrowImageView;
     private ImageView plusImageView, minusImageView;
     private SwitchCompat apiSwitchCompat;
@@ -128,6 +136,7 @@ public abstract class CameraActivity extends AppCompatActivity
         }
 
         threadsTextView = findViewById(R.id.threads);
+        valueSuhu = findViewById(R.id.valuesuhu);
         plusImageView = findViewById(R.id.plus);
         minusImageView = findViewById(R.id.minus);
         apiSwitchCompat = findViewById(R.id.api_info_switch);
@@ -199,7 +208,38 @@ public abstract class CameraActivity extends AppCompatActivity
                 onSwitchCamClick();
             }
         });
+        getsuhu();
 
+    }
+
+    private void getsuhu() {
+        Koneksi_RMQ rmq=new Koneksi_RMQ(this);
+        rmq.setupConnectionFactory();
+        final Handler incomingMessageHandler = new Handler() {
+            @SuppressLint("HandlerLeak")
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void handleMessage(Message msg) {
+                String message = msg.getData().getString("msg");
+                Log.d("RMQMessage", message);
+                String s = message.toString();
+                try {
+                    JSONObject jsonRESULTS = new JSONObject(s);
+                    String mac = jsonRESULTS.getString("mac");
+                    String suhu = jsonRESULTS.getString("suhu");
+                    valueSuhu.setText(suhu);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                String[] tokens = s.split("");
+//                LoginPassword.setText(message);
+//                Toast.makeText(Data_Sampah.this, "ini data dari RMQ"+message, Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        Thread subscribeThread = new Thread();
+        String data="deteksimasker";
+        rmq.subscribe(incomingMessageHandler,subscribeThread,data,data);
     }
 
     private void onSwitchCamClick() {
