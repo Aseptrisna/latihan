@@ -16,6 +16,8 @@
 
 package org.tensorflow.lite.examples.detection;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -27,10 +29,14 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.hardware.camera2.CameraCharacteristics;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,8 +46,11 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -55,6 +64,9 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIModel;
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
+import org.tensorflow.lite.examples.detection.utils.Utils;
+
+import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -482,12 +494,16 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               String pesan="1";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
+//              takeScreenshot();
+              shareScreen();
             }else if (label.equals("mask")){
               String Sn="8c:aa:b5:0e:35:f9";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="0";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
+//              takeScreenshot();
+              shareScreen();
             }
 
             if (result.getId().equals("0")) {
@@ -547,6 +563,76 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
   }
+  private void takeScreenshot() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+      File imageFile = new File(mPath);
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 300;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+      openScreenshot(imageFile);
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
+  }
+
+  private void openScreenshot(File imageFile) {
+    Intent intent = new Intent();
+    intent.setAction(Intent.ACTION_VIEW);
+    Uri uri = Uri.fromFile(imageFile);
+    intent.setDataAndType(uri, "image/*");
+    startActivity(intent);
+  }
+  private void shareScreen() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+    try {
+
+
+      File cacheDir = new File(
+              android.os.Environment.getExternalStorageDirectory(),
+              "devdeeds");
+
+      if (!cacheDir.exists()) {
+        cacheDir.mkdirs();
+//        setDrawingCacheEnabled(false);
+      }
+
+
+      String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+      Utils.savePic(Utils.takeScreenShot(this), mPath);
+
+      Toast.makeText(getApplicationContext(), "Screenshot Saved", Toast.LENGTH_SHORT).show();
+
+
+    } catch (NullPointerException ignored) {
+      ignored.printStackTrace();
+    }
+  }
+  @SuppressLint("RestrictedApi")
+  private void takePhoto() {
+    final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    intent.putExtra(MediaStore.EXTRA_OUTPUT,
+            Uri.fromFile(getTempFile(this)));
+//    startActivityForResult(intent, TAKE_PHOTO_CODE);
+  }
+
 
 
 }
