@@ -66,8 +66,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
 import org.tensorflow.lite.examples.detection.Server.MyRmq;
+import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
+
+import static org.tensorflow.lite.examples.detection.Session.SharedPrefManager.Sp_gambar;
+import static org.tensorflow.lite.examples.detection.Session.SharedPrefManager.Sp_mac;
+import static org.tensorflow.lite.examples.detection.Session.SharedPrefManager.Sp_suhu;
 
 public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
@@ -77,6 +82,7 @@ public abstract class CameraActivity extends AppCompatActivity
     private static final Logger LOGGER = new Logger();
 
     private static final int PERMISSIONS_REQUEST = 1;
+    SharedPrefManager sharedPrefManager;
 
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
     protected int previewWidth = 0;
@@ -123,6 +129,7 @@ public abstract class CameraActivity extends AppCompatActivity
         useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_BACK);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        sharedPrefManager=new SharedPrefManager(this);
 
         setContentView(R.layout.tfe_od_activity_camera);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -228,6 +235,9 @@ public abstract class CameraActivity extends AppCompatActivity
                     String mac = jsonRESULTS.getString("mac");
                     String suhu = jsonRESULTS.getString("suhu");
                     valueSuhu.setText(suhu);
+                    sharedPrefManager.saveSPString(Sp_mac,mac);
+                    sharedPrefManager.saveSPString(Sp_suhu,suhu);
+                    sharedPrefManager.saveSPString(Sp_gambar,"12334232.jpeg");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

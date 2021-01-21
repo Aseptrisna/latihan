@@ -54,8 +54,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.tensorflow.lite.examples.detection.Controler.Sensor;
 import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
 import org.tensorflow.lite.examples.detection.Server.MyRmq;
+import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
+import org.tensorflow.lite.examples.detection.View.Mysensor;
 import org.tensorflow.lite.examples.detection.customview.OverlayView;
 import org.tensorflow.lite.examples.detection.customview.OverlayView.DrawCallback;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
@@ -72,10 +75,12 @@ import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
  * objects.
  */
-public class DetectorActivity extends CameraActivity implements OnImageAvailableListener,MyRmq {
+public class DetectorActivity extends CameraActivity implements OnImageAvailableListener,MyRmq, Mysensor {
   private static final Logger LOGGER = new Logger();
   Koneksi_RMQ rmq;
-
+//  Sensor sensordata;
+//  sensordata= new Sensor(this);
+org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
   // Configuration values for the prepackaged SSD model.
   //private static final int TF_OD_API_INPUT_SIZE = 300;
   //private static final boolean TF_OD_API_IS_QUANTIZED = true;
@@ -131,7 +136,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap portraitBmp = null;
   // here the face is cropped and drawn
   private Bitmap faceBmp = null;
-
+  SharedPrefManager sharedPrefManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -150,7 +155,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     FaceDetector detector = FaceDetection.getClient(options);
 
     faceDetector = detector;
-
+    sharedPrefManager=new SharedPrefManager(this);
+    sensor=new Sensor(this);
 
 
     //checkWritePermission();
@@ -495,7 +501,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
 //              takeScreenshot();
-              shareScreen();
+//              shareScreen();
+              String gambar=sharedPrefManager.getGambar();
+              String mac=sharedPrefManager.getMac();
+              String suhu=sharedPrefManager.getSuhu();
+              String keterangan="Tidak Menggunakan Masker";
+//              Toast.makeText(this, suhu, Toast.LENGTH_SHORT).show();
+              Simpan(mac,suhu,keterangan,gambar);
             }else if (label.equals("mask")){
               String Sn="8c:aa:b5:0e:35:f9";
               String Queue="mqtt-subscription-"+Sn+"qos0";
@@ -504,6 +516,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               rmq.publish(pesan,Queue);
 //              takeScreenshot();
               shareScreen();
+              String gambar=sharedPrefManager.getGambar();
+              String mac=sharedPrefManager.getMac();
+              String suhu=sharedPrefManager.getSuhu();
+              String keterangan="Menggunakan Masker";
+              Simpan(mac,suhu,keterangan,gambar);
             }
 
             if (result.getId().equals("0")) {
@@ -563,6 +580,15 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
 
   }
+
+  private void Simpan(String mac, String suhu, String keterangan, String gambar) {
+    sensor.Simpan(mac,suhu,keterangan,gambar);
+
+
+//    sensordata.(mac,suhu,keterangan,gambar)gambar
+
+  }
+
   private void takeScreenshot() {
     Date now = new Date();
     android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
@@ -580,7 +606,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       File imageFile = new File(mPath);
 
       FileOutputStream outputStream = new FileOutputStream(imageFile);
-      int quality = 300;
+      int quality = 100;
       bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
       outputStream.flush();
       outputStream.close();
@@ -633,6 +659,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 //    startActivityForResult(intent, TAKE_PHOTO_CODE);
   }
 
+  @Override
+  public void Berhasil_kirimdata(String Message){
 
+}
+  @Override
+  public void Gagal_kirimdata(String Message){
+
+  }
+  @Override
+  public void No_Internet(String Message){
+
+  }
 
 }
