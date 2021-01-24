@@ -22,6 +22,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -33,6 +34,7 @@ import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -60,7 +62,10 @@ import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +74,8 @@ import org.tensorflow.lite.examples.detection.Server.MyRmq;
 import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
+import org.tensorflow.lite.examples.detection.utils.Screenshot;
+import org.tensorflow.lite.examples.detection.utils.Utils;
 
 import static org.tensorflow.lite.examples.detection.Session.SharedPrefManager.Sp_gambar;
 import static org.tensorflow.lite.examples.detection.Session.SharedPrefManager.Sp_mac;
@@ -151,7 +158,6 @@ public abstract class CameraActivity extends AppCompatActivity
         gestureLayout = findViewById(R.id.gesture_layout);
         sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
         bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
-
         btnSwitchCam = findViewById(R.id.fab);
 
         ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
@@ -166,7 +172,6 @@ public abstract class CameraActivity extends AppCompatActivity
                         }
                         //                int width = bottomSheetLayout.getMeasuredWidth();
                         int height = gestureLayout.getMeasuredHeight();
-
                         sheetBehavior.setPeekHeight(height);
                     }
                 });
@@ -203,9 +208,7 @@ public abstract class CameraActivity extends AppCompatActivity
         frameValueTextView = findViewById(R.id.frame_info);
         cropValueTextView = findViewById(R.id.crop_info);
         inferenceTimeTextView = findViewById(R.id.inference_info);
-
         apiSwitchCompat.setOnCheckedChangeListener(this);
-
         plusImageView.setOnClickListener(this);
         minusImageView.setOnClickListener(this);
 
@@ -242,6 +245,7 @@ public abstract class CameraActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 String[] tokens = s.split("");
+                SS();
 //                LoginPassword.setText(message);
 //                Toast.makeText(Data_Sampah.this, "ini data dari RMQ"+message, Toast.LENGTH_SHORT).show();
             }
@@ -250,6 +254,35 @@ public abstract class CameraActivity extends AppCompatActivity
         Thread subscribeThread = new Thread();
         String data="deteksimasker";
         rmq.subscribe(incomingMessageHandler,subscribeThread,data,data);
+    }
+
+    private void SS() {
+        Date now = new Date();
+        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+        try {
+            // image naming and path  to include sd card  appending name you choose for file
+            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+
+            // create bitmap screen capture
+            View v1 = getWindow().getDecorView().getRootView();
+            v1.setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+            v1.setDrawingCacheEnabled(false);
+
+            File imageFile = new File(mPath);
+
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            int quality = 100;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            outputStream.flush();
+            outputStream.close();
+
+//            openScreenshot(imageFile);
+        } catch (Throwable e) {
+            // Several error may come out with file handling or DOM
+            e.printStackTrace();
+        }
     }
 
     private void onSwitchCamClick() {
@@ -270,7 +303,6 @@ public abstract class CameraActivity extends AppCompatActivity
 
         intent.putExtra(KEY_USE_FACING, useFacing);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-
         restartWith(intent);
 
     }
