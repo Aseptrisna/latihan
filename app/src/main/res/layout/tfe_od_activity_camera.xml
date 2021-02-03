@@ -51,10 +51,9 @@
         </androidx.appcompat.widget.Toolbar>
 
     </RelativeLayout>
-
-    <include
-        android:id="@+id/bottom_sheet_layout"
-        layout="@layout/tfe_od_layout_bottom_sheet" />
+<!--    <include-->
+<!--        android:id="@+id/bottom_sheet_layout"-->
+<!--        layout="@layout/tfe_od_layout_bottom_sheet" />-->
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -63,5 +62,18 @@
         android:layout_gravity="end|top"
         android:src="@drawable/ic_baseline_switch_camera_24"
         android:layout_margin="16dp" />
+    <TextView
+        android:id="@+id/valuesuhu"
+        android:gravity="center"
+        android:textColor="@color/common_google_signin_btn_text_dark_default"
+        android:text=""
+        android:textSize="30dp"
+        android:textStyle="normal"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="290dp"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

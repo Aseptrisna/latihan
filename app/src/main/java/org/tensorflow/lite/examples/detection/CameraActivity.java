@@ -19,6 +19,7 @@ package org.tensorflow.lite.examples.detection;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -32,6 +33,7 @@ import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -149,68 +151,69 @@ public abstract class CameraActivity extends AppCompatActivity
             requestPermission();
         }
 
-        threadsTextView = findViewById(R.id.threads);
+//        threadsTextView = findViewById(R.id.threads);
         valueSuhu = findViewById(R.id.valuesuhu);
-        plusImageView = findViewById(R.id.plus);
-        minusImageView = findViewById(R.id.minus);
-        apiSwitchCompat = findViewById(R.id.api_info_switch);
-        bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
-        gestureLayout = findViewById(R.id.gesture_layout);
-        sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
-        bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
+//        plusImageView = findViewById(R.id.plus);
+//        minusImageView = findViewById(R.id.minus);
+//        apiSwitchCompat = findViewById(R.id.api_info_switch);
+//        bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
+//        gestureLayout = findViewById(R.id.gesture_layout);
+//        sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
+//        bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
+//
         btnSwitchCam = findViewById(R.id.fab);
 
-        ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                            gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                        } else {
-                            gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        }
-                        //                int width = bottomSheetLayout.getMeasuredWidth();
-                        int height = gestureLayout.getMeasuredHeight();
-                        sheetBehavior.setPeekHeight(height);
-                    }
-                });
-        sheetBehavior.setHideable(false);
+//        ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(
+//                new ViewTreeObserver.OnGlobalLayoutListener() {
+//                    @Override
+//                    public void onGlobalLayout() {
+//                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+//                            gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+//                        } else {
+//                            gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//                        }
+//                        //                int width = bottomSheetLayout.getMeasuredWidth();
+//                        int height = gestureLayout.getMeasuredHeight();
+//                        sheetBehavior.setPeekHeight(height);
+//                    }
+//                });
+//        sheetBehavior.setHideable(false);
+//
+//        sheetBehavior.setBottomSheetCallback(
+//                new BottomSheetBehavior.BottomSheetCallback() {
+//                    @Override
+//                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+//                        switch (newState) {
+//                            case BottomSheetBehavior.STATE_HIDDEN:
+//                                break;
+//                            case BottomSheetBehavior.STATE_EXPANDED: {
+//                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
+//                            }
+//                            break;
+//                            case BottomSheetBehavior.STATE_COLLAPSED: {
+//                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
+//                            }
+//                            break;
+//                            case BottomSheetBehavior.STATE_DRAGGING:
+//                                break;
+//                            case BottomSheetBehavior.STATE_SETTLING:
+//                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
+//                                break;
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+//                    }
+//                });
 
-        sheetBehavior.setBottomSheetCallback(
-                new BottomSheetBehavior.BottomSheetCallback() {
-                    @Override
-                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                        switch (newState) {
-                            case BottomSheetBehavior.STATE_HIDDEN:
-                                break;
-                            case BottomSheetBehavior.STATE_EXPANDED: {
-                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
-                            }
-                            break;
-                            case BottomSheetBehavior.STATE_COLLAPSED: {
-                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                            }
-                            break;
-                            case BottomSheetBehavior.STATE_DRAGGING:
-                                break;
-                            case BottomSheetBehavior.STATE_SETTLING:
-                                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                                break;
-                        }
-                    }
-
-                    @Override
-                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                    }
-                });
-
-        frameValueTextView = findViewById(R.id.frame_info);
-        cropValueTextView = findViewById(R.id.crop_info);
-        inferenceTimeTextView = findViewById(R.id.inference_info);
-        apiSwitchCompat.setOnCheckedChangeListener(this);
-        plusImageView.setOnClickListener(this);
-        minusImageView.setOnClickListener(this);
+//        frameValueTextView = findViewById(R.id.frame_info);
+//        cropValueTextView = findViewById(R.id.crop_info);
+//        inferenceTimeTextView = findViewById(R.id.inference_info);
+//        apiSwitchCompat.setOnCheckedChangeListener(this);
+//        plusImageView.setOnClickListener(this);
+//        minusImageView.setOnClickListener(this);
 
         btnSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -237,7 +240,7 @@ public abstract class CameraActivity extends AppCompatActivity
                     JSONObject jsonRESULTS = new JSONObject(s);
                     String mac = jsonRESULTS.getString("mac");
                     String suhu = jsonRESULTS.getString("suhu");
-                    valueSuhu.setText(suhu);
+                    valueSuhu.setText(suhu+"°C");
                     sharedPrefManager.saveSPString(Sp_mac,mac);
                     sharedPrefManager.saveSPString(Sp_suhu,suhu);
                     sharedPrefManager.saveSPString(Sp_gambar,"12334232.jpeg");
@@ -705,15 +708,15 @@ public abstract class CameraActivity extends AppCompatActivity
     }
 
     protected void showFrameInfo(String frameInfo) {
-        frameValueTextView.setText(frameInfo);
+//        frameValueTextView.setText(frameInfo);
     }
 
     protected void showCropInfo(String cropInfo) {
-        cropValueTextView.setText(cropInfo);
+//        cropValueTextView.setText(cropInfo);
     }
 
     protected void showInference(String inferenceTime) {
-        inferenceTimeTextView.setText(inferenceTime);
+//        inferenceTimeTextView.setText(inferenceTime);
     }
 
     protected abstract void processImage();
@@ -727,4 +730,46 @@ public abstract class CameraActivity extends AppCompatActivity
     protected abstract void setNumThreads(int numThreads);
 
     protected abstract void setUseNNAPI(boolean isChecked);
+
+//    public void SS(){
+//        View rootView = getWindow().getDecorView().findViewById(android.R.id.content);
+//
+//    }
+//    public static Bitmap getScreenShot(View view) {
+//        View screenView = view.getRootView();
+//        screenView.setDrawingCacheEnabled(true);
+//        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+//        screenView.setDrawingCacheEnabled(false);
+//        return bitmap;
+//    }
+//    public static void store(Bitmap bm, String fileName){
+//        final String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Screenshots";
+//        File dir = new File(dirPath);
+//        if(!dir.exists())
+//            dir.mkdirs();
+//        File file = new File(dirPath, fileName);
+//        try {
+//            FileOutputStream fOut = new FileOutputStream(file);
+//            bm.compress(Bitmap.CompressFormat.PNG, 85, fOut);
+//            fOut.flush();
+//            fOut.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    private void shareImage(File file){
+//        Uri uri = Uri.fromFile(file);
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_SEND);
+//        intent.setType("image/*");
+//
+//        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "");
+//        intent.putExtra(android.content.Intent.EXTRA_TEXT, "");
+//        intent.putExtra(Intent.EXTRA_STREAM, uri);
+//        try {
+//            startActivity(Intent.createChooser(intent, "Share Screenshot"));
+//        } catch (ActivityNotFoundException e) {
+//            Toast.makeText(CameraActivity.this, "No App Available", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 }
