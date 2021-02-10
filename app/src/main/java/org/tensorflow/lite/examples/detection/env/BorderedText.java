@@ -102,15 +102,12 @@ public class BorderedText {
   public void setInteriorColor(final int color) {
     interiorPaint.setColor(color);
   }
-
   public void setExteriorColor(final int color) {
     exteriorPaint.setColor(color);
   }
-
   public float getTextSize() {
     return textSize;
   }
-
   public void setAlpha(final int alpha) {
     interiorPaint.setAlpha(alpha);
     exteriorPaint.setAlpha(alpha);

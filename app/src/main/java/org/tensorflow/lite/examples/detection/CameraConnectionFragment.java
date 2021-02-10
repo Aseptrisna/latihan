@@ -282,6 +282,7 @@ public class CameraConnectionFragment extends Fragment {
   @Override
   public void onViewCreated(final View view, final Bundle savedInstanceState) {
     textureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+    Toast.makeText(getActivity(), "Coba", Toast.LENGTH_SHORT).show();
   }
 
   @Override
@@ -299,8 +300,10 @@ public class CameraConnectionFragment extends Fragment {
     // a camera and start preview from here (otherwise, we wait until the surface is ready in
     // the SurfaceTextureListener).
     if (textureView.isAvailable()) {
+//      Toast.makeText(getActivity(), "TEST", Toast.LENGTH_SHORT).show();
       openCamera(textureView.getWidth(), textureView.getHeight());
     } else {
+//      Toast.makeText(getActivity(), "TEST", Toast.LENGTH_SHORT).show();
       textureView.setSurfaceTextureListener(surfaceTextureListener);
     }
   }

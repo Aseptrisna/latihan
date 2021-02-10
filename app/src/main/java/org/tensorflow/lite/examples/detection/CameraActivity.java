@@ -52,8 +52,10 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -61,16 +63,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.vision.CameraSource;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.tensorflow.lite.examples.detection.Controler.CameraController;
 import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
 import org.tensorflow.lite.examples.detection.Server.MyRmq;
 import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
@@ -111,7 +119,7 @@ public abstract class CameraActivity extends AppCompatActivity
     private LinearLayout gestureLayout;
     private BottomSheetBehavior<LinearLayout> sheetBehavior;
 
-    protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView,valueSuhu;
+    protected TextView frameValueTextView, cropValueTextView, inferenceTimeTextView, valueSuhu;
     protected ImageView bottomSheetArrowImageView;
     private ImageView plusImageView, minusImageView;
     private SwitchCompat apiSwitchCompat;
@@ -122,6 +130,11 @@ public abstract class CameraActivity extends AppCompatActivity
     private static final String KEY_USE_FACING = "use_facing";
     private Integer useFacing = null;
     private String cameraId = null;
+    private Camera camera;
+    private boolean hasCamera;
+    private Context context;
+    private int cameraId1;
+    CameraController cameraController;
 
     protected Integer getCameraFacing() {
         return useFacing;
@@ -130,16 +143,17 @@ public abstract class CameraActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         LOGGER.d("onCreate " + this);
         super.onCreate(null);
+//         cameraController=new CameraController(context);
 
         Intent intent = getIntent();
         //useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_FRONT);
         useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_BACK);
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        sharedPrefManager=new SharedPrefManager(this);
-
+        sharedPrefManager = new SharedPrefManager(this);
         setContentView(R.layout.tfe_od_activity_camera);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -225,8 +239,9 @@ public abstract class CameraActivity extends AppCompatActivity
 
     }
 
+
     private void getsuhu() {
-        Koneksi_RMQ rmq=new Koneksi_RMQ(this);
+        Koneksi_RMQ rmq = new Koneksi_RMQ(this);
         rmq.setupConnectionFactory();
         final Handler incomingMessageHandler = new Handler() {
             @SuppressLint("HandlerLeak")
@@ -240,13 +255,39 @@ public abstract class CameraActivity extends AppCompatActivity
                     JSONObject jsonRESULTS = new JSONObject(s);
                     String mac = jsonRESULTS.getString("mac");
                     String suhu = jsonRESULTS.getString("suhu");
-                    valueSuhu.setText(suhu+"°C");
-                    sharedPrefManager.saveSPString(Sp_mac,mac);
-                    sharedPrefManager.saveSPString(Sp_suhu,suhu);
-                    sharedPrefManager.saveSPString(Sp_gambar,"12334232.jpeg");
+                    valueSuhu.setText(suhu + "°C");
+                    sharedPrefManager.saveSPString(Sp_mac, mac);
+                    sharedPrefManager.saveSPString(Sp_suhu, suhu);
+                    sharedPrefManager.saveSPString(Sp_gambar, "12334232.jpeg");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+//                try {
+//                    cameraController.takePicture();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                byte[] data = new byte[0];
+//                File pictureFile = getOutputMediaFile();
+//                if(pictureFile == null){
+//                    Log.d("TEST", "Error creating media file, check storage permissions");
+//                    return;
+//                }
+//
+//                try{
+//                    Log.d("TEST","File created");
+//                    FileOutputStream fos = new FileOutputStream(pictureFile);
+//                    fos.write(data);
+//                    fos.close();
+//                }catch(FileNotFoundException e){
+//                    Log.d("TEST","File not found: "+e.getMessage());
+//                } catch (IOException e){
+//                    Log.d("TEST","Error accessing file: "+e.getMessage());
+//                }
+
+//                camera.takePicture(null, null, mPicture);
+//                takePicture();
                 String[] tokens = s.split("");
                 SS();
 //                LoginPassword.setText(message);
@@ -255,8 +296,9 @@ public abstract class CameraActivity extends AppCompatActivity
         };
 
         Thread subscribeThread = new Thread();
-        String data="deteksimasker";
-        rmq.subscribe(incomingMessageHandler,subscribeThread,data,data);
+        String data = "deteksimasker";
+        rmq.subscribe(incomingMessageHandler, subscribeThread, data, data);
+
     }
 
     private void SS() {
@@ -276,7 +318,7 @@ public abstract class CameraActivity extends AppCompatActivity
             File imageFile = new File(mPath);
 
             FileOutputStream outputStream = new FileOutputStream(imageFile);
-            int quality = 100;
+            int quality = 1000;
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
             outputStream.flush();
             outputStream.close();
@@ -295,15 +337,12 @@ public abstract class CameraActivity extends AppCompatActivity
     }
 
     public void switchCamera() {
-
         Intent intent = getIntent();
-
         if (useFacing == CameraCharacteristics.LENS_FACING_FRONT) {
             useFacing = CameraCharacteristics.LENS_FACING_BACK;
         } else {
             useFacing = CameraCharacteristics.LENS_FACING_FRONT;
         }
-
         intent.putExtra(KEY_USE_FACING, useFacing);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         restartWith(intent);
@@ -639,7 +678,6 @@ public abstract class CameraActivity extends AppCompatActivity
             fragment = frag;
 
         }
-
         getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 
@@ -731,45 +769,5 @@ public abstract class CameraActivity extends AppCompatActivity
 
     protected abstract void setUseNNAPI(boolean isChecked);
 
-//    public void SS(){
-//        View rootView = getWindow().getDecorView().findViewById(android.R.id.content);
-//
-//    }
-//    public static Bitmap getScreenShot(View view) {
-//        View screenView = view.getRootView();
-//        screenView.setDrawingCacheEnabled(true);
-//        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
-//        screenView.setDrawingCacheEnabled(false);
-//        return bitmap;
-//    }
-//    public static void store(Bitmap bm, String fileName){
-//        final String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Screenshots";
-//        File dir = new File(dirPath);
-//        if(!dir.exists())
-//            dir.mkdirs();
-//        File file = new File(dirPath, fileName);
-//        try {
-//            FileOutputStream fOut = new FileOutputStream(file);
-//            bm.compress(Bitmap.CompressFormat.PNG, 85, fOut);
-//            fOut.flush();
-//            fOut.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//    private void shareImage(File file){
-//        Uri uri = Uri.fromFile(file);
-//        Intent intent = new Intent();
-//        intent.setAction(Intent.ACTION_SEND);
-//        intent.setType("image/*");
-//
-//        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, "");
-//        intent.putExtra(android.content.Intent.EXTRA_TEXT, "");
-//        intent.putExtra(Intent.EXTRA_STREAM, uri);
-//        try {
-//            startActivity(Intent.createChooser(intent, "Share Screenshot"));
-//        } catch (ActivityNotFoundException e) {
-//            Toast.makeText(CameraActivity.this, "No App Available", Toast.LENGTH_SHORT).show();
-//        }
-//    }
+
 }

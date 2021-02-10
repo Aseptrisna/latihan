@@ -18,6 +18,9 @@ package org.tensorflow.lite.examples.detection.env;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.os.Environment;
+import android.util.Log;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.FileOutputStream;
 
@@ -71,6 +74,8 @@ public class ImageUtils {
     }
 
     final String fname = filename;
+//    Toast.makeText(get, "", Toast.LENGTH_SHORT).show();
+    Log.d("file",filename);
     final File file = new File(myDir, fname);
     if (file.exists()) {
       file.delete();

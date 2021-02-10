@@ -17,13 +17,34 @@
 package org.tensorflow.lite.examples.detection.customview;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
+import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Surface;
 import android.view.TextureView;
+import android.widget.Toast;
+
+import org.tensorflow.lite.examples.detection.R;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
+
+import static android.content.ContentValues.TAG;
 
 /** A {@link TextureView} that can be adjusted to a specified aspect ratio. */
 public class AutoFitTextureView extends TextureView {
   private int ratioWidth = 0;
-  private int ratioHeight = 0;
+  private int ratioHeight =0;
+
 
   public AutoFitTextureView(final Context context) {
     this(context, null);
@@ -59,6 +80,7 @@ public class AutoFitTextureView extends TextureView {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     final int width = MeasureSpec.getSize(widthMeasureSpec);
     final int height = MeasureSpec.getSize(heightMeasureSpec);
+//    getBitmap(tv);
     if (0 == ratioWidth || 0 == ratioHeight) {
       setMeasuredDimension(width, height);
     } else {
@@ -69,4 +91,40 @@ public class AutoFitTextureView extends TextureView {
       }
     }
   }
+  public void getBitmap(TextureView vv) {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+    String mPath = Environment.getExternalStorageDirectory().toString()
+            + "/Pictures/" + now + ".png";
+    Toast.makeText(getContext(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
+
+    Bitmap bm = vv.getBitmap();
+    if(bm == null)
+      Log.e(TAG,"bitmap is null");
+
+    OutputStream fout = null;
+    File imageFile = new File(mPath);
+
+    try {
+      fout = new FileOutputStream(imageFile);
+      bm.compress(Bitmap.CompressFormat.PNG, 90, fout);
+      fout.flush();
+      fout.close();
+    } catch (FileNotFoundException e) {
+      Log.e(TAG, "FileNotFoundException");
+      e.printStackTrace();
+    } catch (IOException e) {
+      Log.e(TAG, "IOException");
+      e.printStackTrace();
+    }
+  }
+
+//  @Override
+//  public boolean onCreateOptionsMenu(Menu menu) {
+//    // Inflate the menu; this adds items to the action bar if it is present.
+//    getMenuInflater().inflate(R.menu.media_player_video, menu);
+//    return true;
+//  }
+
+
 }

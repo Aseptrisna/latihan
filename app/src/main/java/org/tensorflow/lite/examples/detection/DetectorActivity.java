@@ -34,8 +34,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
 
@@ -47,8 +49,10 @@ import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -137,6 +141,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
   // here the face is cropped and drawn
   private Bitmap faceBmp = null;
   SharedPrefManager sharedPrefManager;
+  TextureView textureView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +162,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     faceDetector = detector;
     sharedPrefManager=new SharedPrefManager(this);
     sensor=new Sensor(this);
+
 
 
     //checkWritePermission();
@@ -240,6 +246,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
 
     trackingOverlay = (OverlayView) findViewById(R.id.tracking_overlay);
+    textureView=(TextureView)findViewById(R.id.texture);
     trackingOverlay.addCallback(
             new DrawCallback() {
               @Override
@@ -501,6 +508,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
               rmq.publish(pesan,Queue);
 //              takeScreenshot();
 //              shareScreen();
+              getBitmap(textureView);
               String gambar=sharedPrefManager.getGambar();
               String mac=sharedPrefManager.getMac();
               String suhu=sharedPrefManager.getSuhu();
@@ -605,12 +613,12 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
       File imageFile = new File(mPath);
 
       FileOutputStream outputStream = new FileOutputStream(imageFile);
-      int quality = 100;
+      int quality = 1000;
       bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
       outputStream.flush();
       outputStream.close();
 
-      openScreenshot(imageFile);
+//            openScreenshot(imageFile);
     } catch (Throwable e) {
       // Several error may come out with file handling or DOM
       e.printStackTrace();
@@ -671,4 +679,27 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
   }
 
+  public void getBitmap(TextureView vv) {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+    Toast.makeText(getApplication(), "Testt", Toast.LENGTH_SHORT).show();
+    String mPath = Environment.getExternalStorageDirectory().toString()
+            + "/Pictures/" + now + ".png";
+    Toast.makeText(getApplication(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
+    Bitmap bm = vv.getBitmap();        if(bm == null)
+      Log.e("test","bitmap is null");
+    OutputStream fout = null;
+    File imageFile = new File(mPath);        try {
+      fout = new FileOutputStream(imageFile);
+      bm.compress(Bitmap.CompressFormat.PNG, 90, fout);
+      fout.flush();
+      fout.close();
+    } catch (FileNotFoundException e) {
+      Log.e("test", "FileNotFoundException");
+      e.printStackTrace();
+    } catch (IOException e) {
+      Log.e("test", "IOException");
+      e.printStackTrace();
+    }
+  }
 }

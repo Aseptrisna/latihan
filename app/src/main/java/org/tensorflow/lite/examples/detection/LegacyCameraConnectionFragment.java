@@ -18,12 +18,18 @@ package org.tensorflow.lite.examples.detection;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
@@ -31,7 +37,14 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 import org.tensorflow.lite.examples.detection.customview.AutoFitTextureView;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
@@ -144,11 +157,33 @@ public class LegacyCameraConnectionFragment extends Fragment {
   @Override
   public void onViewCreated(final View view, final Bundle savedInstanceState) {
     textureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+    Toast.makeText(getActivity(), "Coba", Toast.LENGTH_SHORT).show();
   }
 
   @Override
   public void onActivityCreated(final Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
+//    Date now = new Date();
+//    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+//    Toast.makeText(getActivity(), "Testt", Toast.LENGTH_SHORT).show();
+//    String mPath = Environment.getExternalStorageDirectory().toString()
+//            + "/Pictures/" + now + ".png";
+//    Toast.makeText(getActivity(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
+//    Bitmap bm = textureView.getBitmap();        if(bm == null)
+//      Log.e("test","bitmap is null");
+//    OutputStream fout = null;
+//    File imageFile = new File(mPath);        try {
+//      fout = new FileOutputStream(imageFile);
+//      bm.compress(Bitmap.CompressFormat.PNG, 90, fout);
+//      fout.flush();
+//      fout.close();
+//    } catch (FileNotFoundException e) {
+//      Log.e("test", "FileNotFoundException");
+//      e.printStackTrace();
+//    } catch (IOException e) {
+//      Log.e("test", "IOException");
+//      e.printStackTrace();
+//    }
   }
 
   @Override
@@ -159,12 +194,17 @@ public class LegacyCameraConnectionFragment extends Fragment {
     // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
     // a camera and start preview from here (otherwise, we wait until the surface is ready in
     // the SurfaceTextureListener).
+      try {
+        if (textureView.isAvailable()) {
+          Toast.makeText(getActivity(), "TEST", Toast.LENGTH_SHORT).show();
+          camera.startPreview();
+        } else {
+          textureView.setSurfaceTextureListener(surfaceTextureListener);
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
 
-    if (textureView.isAvailable()) {
-      camera.startPreview();
-    } else {
-      textureView.setSurfaceTextureListener(surfaceTextureListener);
-    }
   }
 
   @Override
