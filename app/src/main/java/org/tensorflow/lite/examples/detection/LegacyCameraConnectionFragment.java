@@ -196,7 +196,7 @@ public class LegacyCameraConnectionFragment extends Fragment {
     // the SurfaceTextureListener).
       try {
         if (textureView.isAvailable()) {
-          Toast.makeText(getActivity(), "TEST", Toast.LENGTH_SHORT).show();
+//          Toast.makeText(getActivity(), "TEST", Toast.LENGTH_SHORT).show();
           camera.startPreview();
         } else {
           textureView.setSurfaceTextureListener(surfaceTextureListener);

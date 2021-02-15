@@ -16,10 +16,15 @@
 
 package org.tensorflow.lite.examples.detection;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -58,7 +63,11 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.tensorflow.lite.examples.detection.Controler.Sensor;
+import org.tensorflow.lite.examples.detection.Server.ApiConfig;
+import org.tensorflow.lite.examples.detection.Server.AppConfig;
 import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
 import org.tensorflow.lite.examples.detection.Server.MyRmq;
 import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
@@ -73,7 +82,17 @@ import org.tensorflow.lite.examples.detection.tflite.TFLiteObjectDetectionAPIMod
 import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
 import org.tensorflow.lite.examples.detection.utils.Utils;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import pub.devrel.easypermissions.EasyPermissions;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
+import static org.tensorflow.lite.examples.detection.env.ImageUtils.saveBitmap;
 
 /**
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
@@ -82,6 +101,8 @@ import static androidx.core.graphics.TypefaceCompatUtil.getTempFile;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener,MyRmq, Mysensor {
   private static final Logger LOGGER = new Logger();
   Koneksi_RMQ rmq;
+  String mediaPath1;
+  String[] mediaColumns = {MediaStore.Video.Media._ID};
 //  Sensor sensordata;
 //  sensordata= new Sensor(this);
 org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
@@ -284,7 +305,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
-      ImageUtils.saveBitmap(croppedBitmap);
+      saveBitmap(croppedBitmap);
     }
 
     InputImage image = InputImage.fromBitmap(croppedBitmap, 0);
@@ -509,12 +530,19 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //              takeScreenshot();
 //              shareScreen();
               getBitmap(textureView);
+//              SimpanGambar();
+              cekpermision();
               String gambar=sharedPrefManager.getGambar();
               String mac=sharedPrefManager.getMac();
               String suhu=sharedPrefManager.getSuhu();
               String keterangan="Tidak Menggunakan Masker";
 //              Toast.makeText(this, suhu, Toast.LENGTH_SHORT).show();
               Simpan(mac,suhu,keterangan,gambar);
+//              Bitmap myBitmap;
+//              View v1 = getWindow().getDecorView().getRootView();
+//              v1.setDrawingCacheEnabled(true);
+//              myBitmap = v1.getDrawingCache();
+//              saveBitmap(myBitmap);
             }else if (label.equals("mask")){
               String Sn="8c:aa:b5:0e:35:f9";
               String Queue="mqtt-subscription-"+Sn+"qos0";
@@ -522,7 +550,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
 //              takeScreenshot();
-              shareScreen();
+//              shareScreen();
               String gambar=sharedPrefManager.getGambar();
               String mac=sharedPrefManager.getMac();
               String suhu=sharedPrefManager.getSuhu();
@@ -588,6 +616,82 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
   }
 
+  private void cekpermision() {
+    String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    if (EasyPermissions.hasPermissions(getApplication(), galleryPermissions)) {
+      SimpanGambar();
+    } else {
+            EasyPermissions.requestPermissions(DetectorActivity.this, "Access for storage",101, galleryPermissions);
+    }
+  }
+  public long getFileId(Activity context, Uri fileUri) {
+    Cursor cursor = context.managedQuery(fileUri, mediaColumns, null, null, null);
+    if (cursor.moveToFirst()) {
+      int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID);
+      return cursor.getInt(columnIndex);
+    }
+    return 0;
+  }
+  private void SimpanGambar() {
+    ProgressDialog progressDialog=new ProgressDialog(DetectorActivity.this);
+    progressDialog.setMessage("Loading...");
+    progressDialog.show();
+    Toast.makeText(this, "Jadian yok", Toast.LENGTH_SHORT).show();
+    File file = new File(String.valueOf(mediaPath1));
+    // Parsing any Media type file
+    RequestBody requestBody = RequestBody.create(MediaType.parse("*/*"), file);
+    MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
+    RequestBody filename = RequestBody.create(MediaType.parse("text/plain"), file.getName());
+    ApiConfig getResponse = AppConfig.getRetrofit().create(ApiConfig.class);
+    Call<ResponseBody> call = getResponse.uploadFile(fileToUpload, filename);
+    call.enqueue(new Callback<ResponseBody>() {
+      @Override
+      public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                Toast.makeText(Input_Datamenu.this, ""+response, Toast.LENGTH_SHORT).show();
+        ResponseBody responseBody=response.body();
+        Log.v("Response",responseBody.toString());
+        Toast.makeText(DetectorActivity.this, response.body().toString(), Toast.LENGTH_SHORT).show();
+        if (response.isSuccessful()){
+          try {
+            JSONObject jsonRESULTS = new JSONObject(response.body().string());
+            Log.d("Json", String.valueOf(jsonRESULTS));
+            if (jsonRESULTS.getString("success").equals("true")){
+              String pesan_login=jsonRESULTS.getString("message");
+              String Nama_Gambar=jsonRESULTS.getString("tmp_name");
+              Toast.makeText(getApplication(), ""+pesan_login, Toast.LENGTH_SHORT).show();
+              progressDialog.dismiss();
+              Log.d("response api", jsonRESULTS.toString());
+            } else if (jsonRESULTS.getString("success").equals("true")){
+              String pesan_login=jsonRESULTS.getString("message");
+              Toast.makeText(getApplication(), ""+pesan_login, Toast.LENGTH_SHORT).show();
+              Log.v("ini",pesan_login);
+//              progressDialog.dismiss();
+//                            InputGagal();
+            }
+          } catch (JSONException e) {
+            e.printStackTrace();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        } else {
+        }
+      }
+      @Override
+      public void onFailure(Call<ResponseBody> call, Throwable t) {
+        try {
+          Log.v("response:","gagal");
+//                    InputGagal();
+          Toast.makeText(getApplication(), "Server Tidak Merespon", Toast.LENGTH_SHORT).show();
+//          progressDialog.dismiss();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+
+      }
+    });
+
+  }
+
   private void Simpan(String mac, String suhu, String keterangan, String gambar) {
     sensor.Simpan(mac,suhu,keterangan,gambar);
 
@@ -603,7 +707,6 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     try {
       // image naming and path  to include sd card  appending name you choose for file
       String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-
       // create bitmap screen capture
       View v1 = getWindow().getDecorView().getRootView();
       v1.setDrawingCacheEnabled(true);
@@ -650,7 +753,6 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
       String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
       Utils.savePic(Utils.takeScreenShot(this), mPath);
-
       Toast.makeText(getApplicationContext(), "Screenshot Saved", Toast.LENGTH_SHORT).show();
 
 
@@ -682,10 +784,13 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
   public void getBitmap(TextureView vv) {
     Date now = new Date();
     android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
-    Toast.makeText(getApplication(), "Testt", Toast.LENGTH_SHORT).show();
+//    Toast.makeText(getApplication(), "Testt", Toast.LENGTH_SHORT).show();
     String mPath = Environment.getExternalStorageDirectory().toString()
             + "/Pictures/" + now + ".png";
-    Toast.makeText(getApplication(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
+//    Toast.makeText(getApplication(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
+    Log.d("FOTO SAVE",mPath);
+    mediaPath1=mPath;
+
     Bitmap bm = vv.getBitmap();        if(bm == null)
       Log.e("test","bitmap is null");
     OutputStream fout = null;
@@ -702,4 +807,53 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
       e.printStackTrace();
     }
   }
+//  @Override
+//  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//    super.onActivityResult(requestCode, resultCode, data);
+//    try {
+//      // When an Image is picked
+//      if (requestCode == 0 && resultCode == RESULT_OK && null != data) {
+//
+//        // Get the Image from data
+//        Uri selectedImage = data.getData();
+//        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+//
+//        Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+//        assert cursor != null;
+//        cursor.moveToFirst();
+//
+//        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//        mediaPath1 = cursor.getString(columnIndex);
+////        Nama_Gambar.setText(mediaPath1);
+//        // Set the Image in ImageView for Previewing the Media
+////        Gambar_CS.setImageBitmap(BitmapFactory.decodeFile(mediaPath1));
+//        cursor.close();
+//
+//      } // When an Video is picked
+//      else if (requestCode == 1 && resultCode == RESULT_OK && null != data) {
+//
+//        // Get the Video from data
+//        Uri selectedVideo = data.getData();
+//        String[] filePathColumn = {MediaStore.Video.Media.DATA};
+//
+//        Cursor cursor = getContentResolver().query(selectedVideo, filePathColumn, null, null, null);
+//        assert cursor != null;
+//        cursor.moveToFirst();
+//
+//        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//
+////                mediaPath1 = cursor.getString(columnIndex);
+////                str2.setText(mediaPath1);
+////                // Set the Video Thumb in ImageView Previewing the Media
+////                imgView.setImageBitmap(getThumbnailPathForLocalFile(MainActivity.this, selectedVideo));
+//        cursor.close();
+//
+//      } else {
+//        Toast.makeText(this, "You haven't picked Image/Video", Toast.LENGTH_LONG).show();
+//      }
+//    } catch (Exception e) {
+//      Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+//    }
+//
+//  }
 }

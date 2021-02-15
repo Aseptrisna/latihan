@@ -289,7 +289,7 @@ public abstract class CameraActivity extends AppCompatActivity
 //                camera.takePicture(null, null, mPicture);
 //                takePicture();
                 String[] tokens = s.split("");
-                SS();
+//                SS();
 //                LoginPassword.setText(message);
 //                Toast.makeText(Data_Sampah.this, "ini data dari RMQ"+message, Toast.LENGTH_SHORT).show();
             }

@@ -81,8 +81,11 @@ public class ImageUtils {
       file.delete();
     }
     try {
+//      Toast.makeText(, "", Toast.LENGTH_SHORT).show();
+      Log.d("aku",filename);
       final FileOutputStream out = new FileOutputStream(file);
       bitmap.compress(Bitmap.CompressFormat.PNG, 99, out);
+
       out.flush();
       out.close();
     } catch (final Exception e) {
