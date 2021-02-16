@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -53,12 +52,16 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -530,14 +533,15 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //              takeScreenshot();
 //              shareScreen();
               getBitmap(textureView);
+//              new UploadFileAsync().execute("");
 //              SimpanGambar();
-              cekpermision();
+//              cekpermision();
               String gambar=sharedPrefManager.getGambar();
               String mac=sharedPrefManager.getMac();
               String suhu=sharedPrefManager.getSuhu();
               String keterangan="Tidak Menggunakan Masker";
 //              Toast.makeText(this, suhu, Toast.LENGTH_SHORT).show();
-              Simpan(mac,suhu,keterangan,gambar);
+//              Simpan(mac,suhu,keterangan,gambar);
 //              Bitmap myBitmap;
 //              View v1 = getWindow().getDecorView().getRootView();
 //              v1.setDrawingCacheEnabled(true);
@@ -619,7 +623,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
   private void cekpermision() {
     String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     if (EasyPermissions.hasPermissions(getApplication(), galleryPermissions)) {
-      SimpanGambar();
+//      SimpanGambar(mPath);
     } else {
             EasyPermissions.requestPermissions(DetectorActivity.this, "Access for storage",101, galleryPermissions);
     }
@@ -632,12 +636,12 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     }
     return 0;
   }
-  private void SimpanGambar() {
+  private void SimpanGambar(String mPath) {
     ProgressDialog progressDialog=new ProgressDialog(DetectorActivity.this);
     progressDialog.setMessage("Loading...");
     progressDialog.show();
-    Toast.makeText(this, "Jadian yok", Toast.LENGTH_SHORT).show();
-    File file = new File(String.valueOf(mediaPath1));
+//    Toast.makeText(this, "Jadian yok", Toast.LENGTH_SHORT).show();
+    File file = new File(String.valueOf(mPath));
     // Parsing any Media type file
     RequestBody requestBody = RequestBody.create(MediaType.parse("*/*"), file);
     MultipartBody.Part fileToUpload = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
@@ -650,11 +654,12 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //                Toast.makeText(Input_Datamenu.this, ""+response, Toast.LENGTH_SHORT).show();
         ResponseBody responseBody=response.body();
         Log.v("Response",responseBody.toString());
-        Toast.makeText(DetectorActivity.this, response.body().toString(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(DetectorActivity.this, response.body().toString(), Toast.LENGTH_SHORT).show();
         if (response.isSuccessful()){
           try {
             JSONObject jsonRESULTS = new JSONObject(response.body().string());
-            Log.d("Json", String.valueOf(jsonRESULTS));
+//            Toast.makeText(DetectorActivity.this, jsonRESULTS.getString, Toast.LENGTH_SHORT).show();
+            Log.d("Json", String.valueOf(response.body().toString()));
             if (jsonRESULTS.getString("success").equals("true")){
               String pesan_login=jsonRESULTS.getString("message");
               String Nama_Gambar=jsonRESULTS.getString("tmp_name");
@@ -712,9 +717,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
       v1.setDrawingCacheEnabled(true);
       Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
       v1.setDrawingCacheEnabled(false);
-
       File imageFile = new File(mPath);
-
       FileOutputStream outputStream = new FileOutputStream(imageFile);
       int quality = 1000;
       bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
@@ -790,13 +793,23 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //    Toast.makeText(getApplication(), "Capturing Screenshot: " + mPath, Toast.LENGTH_SHORT).show();
     Log.d("FOTO SAVE",mPath);
     mediaPath1=mPath;
-
     Bitmap bm = vv.getBitmap();        if(bm == null)
       Log.e("test","bitmap is null");
     OutputStream fout = null;
-    File imageFile = new File(mPath);        try {
+    File imageFile = new File(mPath);
+    try {
       fout = new FileOutputStream(imageFile);
       bm.compress(Bitmap.CompressFormat.PNG, 90, fout);
+      String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+      if (EasyPermissions.hasPermissions(getApplication(), galleryPermissions)) {
+//      SimpanGambar(mPath);
+        uploadFile(mPath);
+
+      } else {
+        EasyPermissions.requestPermissions(DetectorActivity.this, "Access for storage",101, galleryPermissions);
+      }
+//
+//
       fout.flush();
       fout.close();
     } catch (FileNotFoundException e) {
@@ -856,4 +869,145 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //    }
 //
 //  }
-}
+
+  public int uploadFile(String sourceFileUri1) {
+    int serverResponseCode = 0;
+    ProgressDialog dialog = null;
+    String upLoadServerUri = null;
+    final String uploadFilePath = "/storage/emulated/0/Pictures/";
+    final String uploadFileName = "Wed Feb 17 00:26:25 GMT+07:00 2021.png";
+    upLoadServerUri = "http://192.168.43.102/Api/saveimg.php";
+    String fileName = uploadFilePath+ "" +uploadFileName;
+    HttpURLConnection conn = null;
+    DataOutputStream dos = null;
+    String lineEnd = "\r\n";
+    String twoHyphens = "--";
+    String boundary = "*****";
+    int bytesRead, bytesAvailable, bufferSize;
+    byte[] buffer;
+    int maxBufferSize = 1 * 1024 * 1024;
+    File sourceFile = new File(uploadFilePath + "" + uploadFileName);
+    if (!sourceFile.isFile()) {
+      dialog.dismiss();
+      Log.e("uploadFile", "Source File not exist :"
+              +uploadFilePath + "" + uploadFileName);
+      runOnUiThread(new Runnable() {
+        public void run() {
+//          messageText.setText("Source File not exist :"
+//                  +uploadFilePath + "" + uploadFileName);
+        }
+      });
+
+      return 0;
+    } else {
+      try {
+
+        // open a URL connection to the Servlet
+        FileInputStream fileInputStream = new FileInputStream(sourceFile);
+        URL url = new URL(upLoadServerUri);
+
+        // Open a HTTP  connection to  the URL
+        conn = (HttpURLConnection) url.openConnection();
+        conn.setDoInput(true); // Allow Inputs
+        conn.setDoOutput(true); // Allow Outputs
+        conn.setUseCaches(false); // Don't use a Cached Copy
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+        conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+        conn.setRequestProperty("uploaded_file", fileName);
+
+        dos = new DataOutputStream(conn.getOutputStream());
+        dos.writeBytes(twoHyphens + boundary + lineEnd);
+//        dos.writeBytes("Content-Disposition: form-data;name=uploaded_file;filename=" + fileName + lineEnd);
+//        dos.writeBytes("Content-Disposition: form-data; name=uploaded_file;filename=" + fileName + "" + lineEnd);
+        dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
+        dos.writeBytes(lineEnd);
+
+                   // create a buffer of  maximum size
+                   bytesAvailable = fileInputStream.available();
+
+                   bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                   buffer = new byte[bufferSize];
+
+                   // read file and write it into form...
+                   bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                   while (bytesRead > 0) {
+
+                     dos.write(buffer, 0, bufferSize);
+                     bytesAvailable = fileInputStream.available();
+                     bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                     bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                    }
+
+                   // send multipart form data necesssary after file data...
+                   dos.writeBytes(lineEnd);
+
+
+                   // Responses from the server (code and message)
+                   serverResponseCode = conn.getResponseCode();
+                   String serverResponseMessage = conn.getResponseMessage();
+
+                   Log.i("uploadFile", "HTTP Response is : "
+                           + serverResponseMessage + ": " + serverResponseCode);
+
+                   if(serverResponseCode == 200){
+
+                       runOnUiThread(new Runnable() {
+                            public void run() {
+
+                                String msg = "File Upload Completed.\n\n See uploaded file here : \n\n"
+                                              +"http://192.168.43.102/Api/Img/"
+                                              +uploadFileName;
+//                                messageText.setText(msg);
+                                Log.d("msg",msg);
+                                Toast.makeText(DetectorActivity.this, "File Upload Complete.",
+                                             Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                   }
+
+                   //close the streams //
+                   fileInputStream.close();
+                   dos.flush();
+                   dos.close();
+
+              } catch (MalformedURLException ex) {
+
+//                  dialog.dismiss();
+                  ex.printStackTrace();
+
+                  runOnUiThread(new Runnable() {
+                      public void run() {
+//                          messageText.setText("MalformedURLException Exception : check script url.");
+                          Toast.makeText(DetectorActivity.this, "MalformedURLException",
+                                                              Toast.LENGTH_SHORT).show();
+                      }
+                  });
+
+                  Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
+              } catch (Exception e) {
+
+//                  dialog.dismiss();
+                  e.printStackTrace();
+
+                  runOnUiThread(new Runnable() {
+                      public void run() {
+//                          messageText.setText("Got Exception : see logcat ");
+                          Toast.makeText(DetectorActivity.this, "Got Exception : see logcat ",
+                                  Toast.LENGTH_SHORT).show();
+                      }
+                  });
+                  Log.e("", "Exception : " + e.getMessage(), e);
+              }
+//              dialog.dismiss();
+              return serverResponseCode;
+
+           } // End else block
+         }
+
+
+  }
+
