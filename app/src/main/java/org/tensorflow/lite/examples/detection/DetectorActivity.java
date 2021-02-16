@@ -800,14 +800,14 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     try {
       fout = new FileOutputStream(imageFile);
       bm.compress(Bitmap.CompressFormat.PNG, 90, fout);
-      String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-      if (EasyPermissions.hasPermissions(getApplication(), galleryPermissions)) {
-//      SimpanGambar(mPath);
-        uploadFile(mPath);
-
-      } else {
-        EasyPermissions.requestPermissions(DetectorActivity.this, "Access for storage",101, galleryPermissions);
-      }
+//      String[] galleryPermissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+//      if (EasyPermissions.hasPermissions(getApplication(), galleryPermissions)) {
+////      SimpanGambar(mPath);
+//        uploadFile(mPath);
+//
+//      } else {
+//        EasyPermissions.requestPermissions(DetectorActivity.this, "Access for storage",101, galleryPermissions);
+//      }
 //
 //
       fout.flush();
@@ -888,7 +888,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     int maxBufferSize = 1 * 1024 * 1024;
     File sourceFile = new File(uploadFilePath + "" + uploadFileName);
     if (!sourceFile.isFile()) {
-      dialog.dismiss();
+//      dialog.dismiss();
       Log.e("uploadFile", "Source File not exist :"
               +uploadFilePath + "" + uploadFileName);
       runOnUiThread(new Runnable() {
