@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -44,6 +45,9 @@ import android.util.TypedValue;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.mlkit.vision.common.InputImage;
@@ -186,6 +190,10 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
     faceDetector = detector;
     sharedPrefManager=new SharedPrefManager(this);
     sensor=new Sensor(this);
+    if (ContextCompat.checkSelfPermission(DetectorActivity.this, Manifest.permission.CAMERA) !=
+            PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA},
+              50); }
 
 
 
@@ -553,6 +561,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
               String pesan="0";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
+                getBitmap(textureView);
 //              takeScreenshot();
 //              shareScreen();
               String gambar=sharedPrefManager.getGambar();

@@ -282,7 +282,7 @@ public class CameraConnectionFragment extends Fragment {
   @Override
   public void onViewCreated(final View view, final Bundle savedInstanceState) {
     textureView = (AutoFitTextureView) view.findViewById(R.id.texture);
-    Toast.makeText(getActivity(), "Coba", Toast.LENGTH_SHORT).show();
+//    Toast.makeText(getActivity(), "Coba", Toast.LENGTH_SHORT).show();
   }
 
   @Override
