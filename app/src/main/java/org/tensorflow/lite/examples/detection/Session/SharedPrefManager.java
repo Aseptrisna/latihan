@@ -19,6 +19,7 @@ public class SharedPrefManager {
     public  static final String Sp_suhu="suhu";
     public  static final String Sp_mac="mac";
     public  static final String Sp_gambar="gambar";
+    public  static final String Sp_keterangan="keterangan";
     public static final String SP_SUDAH_LOGIN = "SudahLogin";
 
     SharedPreferences sp;
@@ -84,6 +85,9 @@ public class SharedPrefManager {
     }
     public String getGambar(){
         return sp.getString(Sp_gambar, "");
+    }
+    public String getSp_keterangan(){
+        return sp.getString(Sp_keterangan, "");
     }
     public Boolean getSudahLogin(){
         return sp.getBoolean(SP_SUDAH_LOGIN, false);

@@ -79,9 +79,11 @@ import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.lite.examples.detection.Controler.CameraController;
+import org.tensorflow.lite.examples.detection.Controler.Sensor;
 import org.tensorflow.lite.examples.detection.Server.Koneksi_RMQ;
 import org.tensorflow.lite.examples.detection.Server.MyRmq;
 import org.tensorflow.lite.examples.detection.Session.SharedPrefManager;
+import org.tensorflow.lite.examples.detection.View.Mysensor;
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
 import org.tensorflow.lite.examples.detection.utils.Screenshot;
@@ -95,11 +97,12 @@ public abstract class CameraActivity extends AppCompatActivity
         implements OnImageAvailableListener,
         Camera.PreviewCallback,
         CompoundButton.OnCheckedChangeListener,
-        View.OnClickListener, MyRmq {
+        View.OnClickListener, MyRmq, Mysensor {
     private static final Logger LOGGER = new Logger();
 
     private static final int PERMISSIONS_REQUEST = 1;
     SharedPrefManager sharedPrefManager;
+    Sensor sensor;
 
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
     protected int previewWidth = 0;
@@ -147,6 +150,7 @@ public abstract class CameraActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         LOGGER.d("onCreate " + this);
         super.onCreate(null);
+        sensor=new Sensor(CameraActivity.this);
 //         cameraController=new CameraController(context);
 
         Intent intent = getIntent();
@@ -258,40 +262,16 @@ public abstract class CameraActivity extends AppCompatActivity
                     valueSuhu.setText(suhu + "°C");
                     sharedPrefManager.saveSPString(Sp_mac, mac);
                     sharedPrefManager.saveSPString(Sp_suhu, suhu);
-                    sharedPrefManager.saveSPString(Sp_gambar, "12334232.jpeg");
+                    String gambar=sharedPrefManager.getGambar();
+                    String Mac=sharedPrefManager.getMac();
+                    String Suhu=sharedPrefManager.getSuhu();
+                    String keterangan=sharedPrefManager.getSp_keterangan();
+                    sensor.Simpan(Mac,Suhu,keterangan,gambar);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-//                try {
-//                    cameraController.takePicture();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                byte[] data = new byte[0];
-//                File pictureFile = getOutputMediaFile();
-//                if(pictureFile == null){
-//                    Log.d("TEST", "Error creating media file, check storage permissions");
-//                    return;
-//                }
-//
-//                try{
-//                    Log.d("TEST","File created");
-//                    FileOutputStream fos = new FileOutputStream(pictureFile);
-//                    fos.write(data);
-//                    fos.close();
-//                }catch(FileNotFoundException e){
-//                    Log.d("TEST","File not found: "+e.getMessage());
-//                } catch (IOException e){
-//                    Log.d("TEST","Error accessing file: "+e.getMessage());
-//                }
-
-//                camera.takePicture(null, null, mPicture);
-//                takePicture();
                 String[] tokens = s.split("");
-//                SS();
-//                LoginPassword.setText(message);
-//                Toast.makeText(Data_Sampah.this, "ini data dari RMQ"+message, Toast.LENGTH_SHORT).show();
+//                valueSuhu.setText("");
             }
         };
 
@@ -645,9 +625,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
 
     protected void setFragment() {
-
         this.cameraId = chooseCamera();
-
         Fragment fragment;
         if (useCamera2API) {
             CameraConnectionFragment camera2Fragment =
