@@ -129,7 +129,7 @@ public abstract class CameraActivity extends AppCompatActivity
     private TextView threadsTextView;
 
     private FloatingActionButton btnSwitchCam;
-
+    TextView Keterangan;
     private static final String KEY_USE_FACING = "use_facing";
     private Integer useFacing = null;
     private String cameraId = null;
@@ -171,6 +171,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
 //        threadsTextView = findViewById(R.id.threads);
         valueSuhu = findViewById(R.id.valuesuhu);
+        Keterangan=findViewById(R.id.keterangan);
 //        plusImageView = findViewById(R.id.plus);
 //        minusImageView = findViewById(R.id.minus);
 //        apiSwitchCompat = findViewById(R.id.api_info_switch);
@@ -232,6 +233,13 @@ public abstract class CameraActivity extends AppCompatActivity
 //        apiSwitchCompat.setOnCheckedChangeListener(this);
 //        plusImageView.setOnClickListener(this);
 //        minusImageView.setOnClickListener(this);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getsuhu();
+            }
+            //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
+        }, 1000);
 
         btnSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -239,7 +247,7 @@ public abstract class CameraActivity extends AppCompatActivity
                 onSwitchCamClick();
             }
         });
-        getsuhu();
+
 
     }
 
@@ -259,14 +267,55 @@ public abstract class CameraActivity extends AppCompatActivity
                     JSONObject jsonRESULTS = new JSONObject(s);
                     String mac = jsonRESULTS.getString("mac");
                     String suhu = jsonRESULTS.getString("suhu");
-                    valueSuhu.setText(suhu + "°C");
-                    sharedPrefManager.saveSPString(Sp_mac, mac);
-                    sharedPrefManager.saveSPString(Sp_suhu, suhu);
-                    String gambar=sharedPrefManager.getGambar();
-                    String Mac=sharedPrefManager.getMac();
-                    String Suhu=sharedPrefManager.getSuhu();
-                    String keterangan=sharedPrefManager.getSp_keterangan();
-                    sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                    float suhudata=Float.parseFloat(suhu);
+                    if (suhudata <= 33.00){
+                        Keterangan.setText("Suhu Belum Terbaca");
+                        valueSuhu.setText("");
+                    }else if (suhudata > 33.00) {
+                        Keterangan.setText("");
+                        String datasuhu=suhu.substring(0,5);
+                        valueSuhu.setText(datasuhu + " °C");
+                        sharedPrefManager.saveSPString(Sp_mac, datasuhu);
+                        sharedPrefManager.saveSPString(Sp_suhu, suhu);
+                        String gambar=sharedPrefManager.getGambar();
+                        String Mac=sharedPrefManager.getMac();
+                        String Suhu=sharedPrefManager.getSuhu();
+                        String keterangan=sharedPrefManager.getSp_keterangan();
+                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                    }else if (suhudata > 37.00) {
+                        String datasuhu=suhu.substring(0,5);
+                        valueSuhu.setText(datasuhu + " °C");
+                        Keterangan.setText("Suhu Badan Anda Tinggi");
+                        sharedPrefManager.saveSPString(Sp_mac, mac);
+                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        String gambar=sharedPrefManager.getGambar();
+                        String Mac=sharedPrefManager.getMac();
+                        String Suhu=sharedPrefManager.getSuhu();
+                        String keterangan=sharedPrefManager.getSp_keterangan();
+                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                    }else if (suhudata > 38.00) {
+                        String datasuhu=suhu.substring(0,5);
+                        valueSuhu.setText(datasuhu + " °C");
+                        Keterangan.setText("Suhu Badan Anda Tinggi");
+                        sharedPrefManager.saveSPString(Sp_mac, mac);
+                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        String gambar=sharedPrefManager.getGambar();
+                        String Mac=sharedPrefManager.getMac();
+                        String Suhu=sharedPrefManager.getSuhu();
+                        String keterangan=sharedPrefManager.getSp_keterangan();
+                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                    }else if (suhudata > 40.00) {
+                        String datasuhu=suhu.substring(0,5);
+                        valueSuhu.setText(datasuhu + " °C");
+                        Keterangan.setText("Suhu Badan Anda Tinggi");
+                        sharedPrefManager.saveSPString(Sp_mac, mac);
+                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        String gambar=sharedPrefManager.getGambar();
+                        String Mac=sharedPrefManager.getMac();
+                        String Suhu=sharedPrefManager.getSuhu();
+                        String keterangan=sharedPrefManager.getSp_keterangan();
+                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -279,35 +328,6 @@ public abstract class CameraActivity extends AppCompatActivity
         String data = "deteksimasker";
         rmq.subscribe(incomingMessageHandler, subscribeThread, data, data);
 
-    }
-
-    private void SS() {
-        Date now = new Date();
-        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
-
-        try {
-            // image naming and path  to include sd card  appending name you choose for file
-            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-
-            // create bitmap screen capture
-            View v1 = getWindow().getDecorView().getRootView();
-            v1.setDrawingCacheEnabled(true);
-            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-            v1.setDrawingCacheEnabled(false);
-
-            File imageFile = new File(mPath);
-
-            FileOutputStream outputStream = new FileOutputStream(imageFile);
-            int quality = 1000;
-            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-            outputStream.flush();
-            outputStream.close();
-
-//            openScreenshot(imageFile);
-        } catch (Throwable e) {
-            // Several error may come out with file handling or DOM
-            e.printStackTrace();
-        }
     }
 
     private void onSwitchCamClick() {

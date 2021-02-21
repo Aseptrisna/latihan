@@ -543,14 +543,13 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
           Classifier.Recognition result = resultsAux.get(0);
           float conf = result.getConfidence();
           if (conf >= 0.6f) {
-
             confidence = conf;
             label = result.getTitle();
 //            Toast.makeText(this, ""+label, Toast.LENGTH_SHORT).show();
             if (label.equals("no mask")){
               String Sn="8c:aa:b5:0e:35:f9";
               String Queue="mqtt-subscription-"+Sn+"qos0";
-              String pesan="1";
+              String pesan="1000#1000";
               Keterangan="Tidak Menggunkan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
@@ -558,7 +557,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
             }else if (label.equals("mask")){
               String Sn="8c:aa:b5:0e:35:f9";
               String Queue="mqtt-subscription-"+Sn+"qos0";
-              String pesan="0";
+              String pesan="0000#1000";
               Keterangan="Menggunkan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
@@ -571,8 +570,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //              String pesan="1";
 //              rmq.setupConnectionFactory();
 //              rmq.publish(pesan,Queue);
-            }
-            else {
+            } else {
               color = Color.RED;
 //              String Sn="8c:aa:b5:0e:35:f9";
 //              String Queue="mqtt-subscription-"+Sn+"qos0";
@@ -581,7 +579,6 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //              rmq.publish(pesan,Queue);
             }
           }
-
         }
 
         if (getCameraFacing() == CameraCharacteristics.LENS_FACING_FRONT) {
@@ -622,6 +619,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
   }
   private void SimpanGambar() {
+//
 //    ProgressDialog progressDialog=new ProgressDialog(DetectorActivity.this);
 //    progressDialog.setMessage("Loading...");
 //    progressDialog.show();
