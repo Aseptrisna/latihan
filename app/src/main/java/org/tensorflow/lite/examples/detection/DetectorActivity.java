@@ -547,7 +547,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
             label = result.getTitle();
 //            Toast.makeText(this, ""+label, Toast.LENGTH_SHORT).show();
             if (label.equals("no mask")){
-              String Sn="8c:aa:b5:0e:35:f9";
+              String Sn="40:f5:20:2e:4f:3f";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="1000#1000";
               Keterangan="Tidak Menggunkan Masker";
@@ -555,7 +555,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
               rmq.publish(pesan,Queue);
               getBitmap(textureView);
             }else if (label.equals("mask")){
-              String Sn="8c:aa:b5:0e:35:f9";
+              String Sn="40:f5:20:2e:4f:3f";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="0000#1000";
               Keterangan="Menggunkan Masker";

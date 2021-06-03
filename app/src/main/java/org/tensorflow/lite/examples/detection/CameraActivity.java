@@ -233,6 +233,7 @@ public abstract class CameraActivity extends AppCompatActivity
 //        apiSwitchCompat.setOnCheckedChangeListener(this);
 //        plusImageView.setOnClickListener(this);
 //        minusImageView.setOnClickListener(this);
+        getsuhu();
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
