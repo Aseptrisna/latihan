@@ -278,11 +278,13 @@ public abstract class CameraActivity extends AppCompatActivity
                         valueSuhu.setText(datasuhu + " °C");
                         sharedPrefManager.saveSPString(Sp_mac, datasuhu);
                         sharedPrefManager.saveSPString(Sp_suhu, suhu);
+                        ///panggil dari local
                         String gambar=sharedPrefManager.getGambar();
                         String Mac=sharedPrefManager.getMac();
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
                         sensor.Simpan(Mac,Suhu,keterangan,gambar);
+
                     }else if (suhudata > 37.00) {
                         String datasuhu=suhu.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
@@ -294,6 +296,7 @@ public abstract class CameraActivity extends AppCompatActivity
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
                         sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        Perintah_palang();
                     }else if (suhudata > 38.00) {
                         String datasuhu=suhu.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
@@ -305,6 +308,7 @@ public abstract class CameraActivity extends AppCompatActivity
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
                         sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        Perintah_palang();
                     }else if (suhudata > 40.00) {
                         String datasuhu=suhu.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
@@ -316,6 +320,7 @@ public abstract class CameraActivity extends AppCompatActivity
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
                         sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        Perintah_palang();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -330,6 +335,37 @@ public abstract class CameraActivity extends AppCompatActivity
         rmq.subscribe(incomingMessageHandler, subscribeThread, data, data);
 
     }
+
+    public  void Perintah_palang(){
+        Koneksi_RMQ rmq = new Koneksi_RMQ(this);
+        String Sn="2c:f4:32:5e:1f:27";
+        String Queue="mqtt-subscription-"+Sn+"qos0";
+//        String Pesan="1";
+
+        String masker=sharedPrefManager.getSp_keterangan();
+        String Suhu=sharedPrefManager.getSuhu();
+        float suhudata=Float.parseFloat(Suhu);
+        if (masker.equals("Menggunakan Masker")||suhudata <=37){
+            rmq.setupConnectionFactory();
+            rmq.publish(Queue,"0");
+        }else  if(masker.equals("Tidak Menggunakan Masker")||suhudata <=37){
+            rmq.setupConnectionFactory();
+            rmq.publish(Queue,"1");
+        }else if (masker.equals("Menggunakan Masker")||suhudata >=37){
+            rmq.setupConnectionFactory();
+            rmq.publish(Queue,"1");
+        } else if (masker.equals("Tidak Menggunakan Masker")||suhudata >=37){
+            rmq.setupConnectionFactory();
+            rmq.publish(Queue,"1");
+        }else {
+            Toast.makeText(context, "Kondisi Belum Di temukan", Toast.LENGTH_SHORT).show();
+        }
+
+        }
+
+
+
+
 
     private void onSwitchCamClick() {
 

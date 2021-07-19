@@ -113,6 +113,7 @@ import static org.tensorflow.lite.examples.detection.env.ImageUtils.saveBitmap;
  */
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener,MyRmq, Mysensor {
   private static final Logger LOGGER = new Logger();
+//  Koneksi_RMQ rmq
   Koneksi_RMQ rmq;
   String mediaPath1;
   String[] mediaColumns = {MediaStore.Video.Media._ID};
@@ -546,19 +547,20 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
             confidence = conf;
             label = result.getTitle();
 //            Toast.makeText(this, ""+label, Toast.LENGTH_SHORT).show();
+
             if (label.equals("no mask")){
-              String Sn="40:f5:20:2e:4f:3f";
+              String Sn="2c:f4:32:5e:1f:27";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="1000#1000";
-              Keterangan="Tidak Menggunkan Masker";
+              Keterangan="Tidak Menggunakan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
               getBitmap(textureView);
             }else if (label.equals("mask")){
-              String Sn="40:f5:20:2e:4f:3f";
+              String Sn="2c:f4:32:5e:1f:27";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="0000#1000";
-              Keterangan="Menggunkan Masker";
+              Keterangan="Menggunakan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
               getBitmap(textureView);
@@ -693,6 +695,7 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
   @Override
   public void Berhasil_kirimdata(String Message){
+
 
 }
   @Override

@@ -32,12 +32,14 @@ final Mysensor mysensor;
                             Log.d("response api", jsonRESULTS.toString());
                             String Message=jsonRESULTS.getString("message");
 //                            myRequest.ServerResponse(Message);
+                            Log.d("sip",Message);
                             mysensor.Berhasil_kirimdata(Message);
                         } else {
                             try {
                                 Log.d("response api", jsonRESULTS.toString());
                                 String Message=jsonRESULTS.getString("message");
 //                                myRequest.ServerNoResponse(Message);
+                                Log.d("sip",Message);
                                 mysensor.Gagal_kirimdata(Message);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -51,6 +53,7 @@ final Mysensor mysensor;
                 } else {
                     try {
                         String error_message ="Ada Masalah Internet";
+                        Log.d("sip",error_message);
 //                        myRequest.ServerNoResponse(error_message);
                         mysensor.No_Internet(error_message);
                     } catch (Exception e) {
@@ -63,6 +66,7 @@ final Mysensor mysensor;
                 Log.v("debug", "onFailure: ERROR > " + t.toString());
                 try {
                     String error_message ="Server Tidak Merespon";
+                    Log.d("sip",error_message);
                     mysensor.No_Internet(error_message);
                 } catch (Exception e) {
                     e.printStackTrace();
