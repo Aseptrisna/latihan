@@ -39,6 +39,7 @@ import android.media.ImageReader.OnImageAvailableListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -131,15 +132,15 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
   // Face Mask
   private static final int TF_OD_API_INPUT_SIZE = 224;
   private static final boolean TF_OD_API_IS_QUANTIZED = false;
-  private static final String TF_OD_API_MODEL_FILE = "mask_detector.tflite";
-  private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/mask_labelmap.txt";
+  private static final String TF_OD_API_MODEL_FILE = "model_masker_detector.tflite";
+  private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/labels.txt";
 
   private static final DetectorMode MODE = DetectorMode.TF_OD_API;
   // Minimum detection confidence to track a detection.
   private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
   private static final boolean MAINTAIN_ASPECT = false;
 
-  private static final Size DESIRED_PREVIEW_SIZE = new Size(800, 600);
+  private static final Size DESIRED_PREVIEW_SIZE = new Size(800, 1720);
   //private static final int CROP_SIZE = 320;
   //private static final Size CROP_SIZE = new Size(320, 320);
 
@@ -549,21 +550,23 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 //            Toast.makeText(this, ""+label, Toast.LENGTH_SHORT).show();
 
             if (label.equals("no mask")){
-              String Sn="2c:f4:32:5e:1f:27";
+              String Sn="40:f5:20:2e:4f:3f";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="1000#1000";
               Keterangan="Tidak Menggunakan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
               getBitmap(textureView);
+
             }else if (label.equals("mask")){
-              String Sn="2c:f4:32:5e:1f:27";
+              String Sn="40:f5:20:2e:4f:3f";
               String Queue="mqtt-subscription-"+Sn+"qos0";
               String pesan="0000#1000";
               Keterangan="Menggunakan Masker";
               rmq.setupConnectionFactory();
               rmq.publish(pesan,Queue);
               getBitmap(textureView);
+
             }
             if (result.getId().equals("0")) {
               color = Color.GREEN;
@@ -685,8 +688,8 @@ org.tensorflow.lite.examples.detection.Controler.Sensor sensor;
 
   }
 
-  private void Simpan(String mac, String suhu, String keterangan, String gambar) {
-    sensor.Simpan(mac,suhu,keterangan,gambar);
+  private void Simpan(String mac, String suhu, String suhuruangan, String keterangan, String gambar, String Hasil) {
+    sensor.Simpan(mac,suhu,suhuruangan,Hasil,keterangan,gambar);
 
 
 //    sensordata.(mac,suhu,keterangan,gambar)gambar

@@ -20,8 +20,10 @@ final Mysensor mysensor;
     public Sensor(Mysensor mysensor) {
         this.mysensor = mysensor;
     }
-    public void Simpan(String mac, String suhu, String keterangan, String gambar){
-        retrofit2.Call<ResponseBody> call = InitRetrofit.getInstance().getApi().SimpanSensor(keterangan,mac,gambar,suhu);
+    public void Simpan(String mac, String suhu, String suhuruangan, String Hasil, String keterangan, String gambar ){
+        Log.d("suhu hasilnya :",Hasil);
+        Log.d("Keterangan :",Hasil);
+        retrofit2.Call<ResponseBody> call = InitRetrofit.getInstance().getApi().SimpanSensor(keterangan,mac,gambar,suhuruangan,suhu,Hasil);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

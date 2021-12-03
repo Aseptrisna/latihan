@@ -11,8 +11,10 @@ public interface ApiServices {
     @POST("simpan.php")
     Call<ResponseBody> SimpanSensor(
             @Field("Keterangan") String keterangan,
-            @Field("Serial_Number") String serial_nuber,
+            @Field("Serial_Number") String serial_number,
             @Field("Gambar") String gambar,
-            @Field("Suhu_Tubuh") String suhu_tubuh
+            @Field("suhuruangan") String suhuruangan,
+            @Field("Suhu_Tubuh") String suhu_tubuh,
+            @Field("suhuhasil") String suhuhasil
     );
 }

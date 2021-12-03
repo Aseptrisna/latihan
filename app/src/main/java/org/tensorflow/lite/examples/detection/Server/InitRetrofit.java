@@ -8,7 +8,7 @@ public class InitRetrofit {
     //    public  static final  String BASE_IP="http://172.31.0.30";
 //   public static final String BASE_URL ="http://172.31.0.74/Api_TimeUP/Fungsi/";
 //    public static final String BASE_URL =BASE_IP+"/Api_TimeUP/Fungsi/";
-    public static final String BASE_URL ="http://192.168.43.116/API_Covid/";
+    public static final String BASE_URL ="http://192.168.43.247/API_Covid/";
     //    public  static final String Url_Provinsi="http://www.emsifa.com/api-wilayah-indonesia/api/";
     private static InitRetrofit mInstance;
     private Retrofit retrofit;

@@ -155,7 +155,7 @@ public abstract class CameraActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         //useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_FRONT);
-        useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_BACK);
+        useFacing = intent.getIntExtra(KEY_USE_FACING, CameraCharacteristics.LENS_FACING_FRONT);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sharedPrefManager = new SharedPrefManager(this);
         setContentView(R.layout.tfe_od_activity_camera);
@@ -240,7 +240,7 @@ public abstract class CameraActivity extends AppCompatActivity
                 getsuhu();
             }
             //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
-        }, 1000);
+        }, 3000);
 
         btnSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -248,7 +248,6 @@ public abstract class CameraActivity extends AppCompatActivity
                 onSwitchCamClick();
             }
         });
-
 
     }
 
@@ -268,59 +267,86 @@ public abstract class CameraActivity extends AppCompatActivity
                     JSONObject jsonRESULTS = new JSONObject(s);
                     String mac = jsonRESULTS.getString("mac");
                     String suhu = jsonRESULTS.getString("suhu");
-                    float suhudata=Float.parseFloat(suhu);
+                    String suhuruangan = jsonRESULTS.getString("Ruangan");
+                    String suhuhasil = jsonRESULTS.getString("Hasil");
+                    float suhudata=Float.parseFloat(suhuhasil);
                     if (suhudata <= 33.00){
                         Keterangan.setText("Suhu Belum Terbaca");
                         valueSuhu.setText("");
                     }else if (suhudata > 33.00) {
                         Keterangan.setText("");
-                        String datasuhu=suhu.substring(0,5);
+                        String datasuhu=suhuhasil.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
-                        sharedPrefManager.saveSPString(Sp_mac, datasuhu);
+                        sharedPrefManager.saveSPString(Sp_mac, mac);
                         sharedPrefManager.saveSPString(Sp_suhu, suhu);
-                        ///panggil dari local
                         String gambar=sharedPrefManager.getGambar();
                         String Mac=sharedPrefManager.getMac();
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
-                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        String Suhu_ruangan=suhuruangan;
+                        String Suhu_hasil=suhuhasil.substring(0,5);
+                        sensor.Simpan(Mac,Suhu,Suhu_ruangan,Suhu_hasil,keterangan,gambar);
+                        Log.d("ruangan",Suhu_ruangan);
+                        Log.d("Hasil",Suhu_hasil);
+                        Log.d("suhu Asli",Suhu);
+
+//                        Toast.makeText(CameraActivity.this, "suhu Ruangan:", Toast.LENGTH_SHORT).show();
+                        Perintah_palang();
 
                     }else if (suhudata > 37.00) {
-                        String datasuhu=suhu.substring(0,5);
+                        String datasuhu=suhuhasil.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
                         Keterangan.setText("Suhu Badan Anda Tinggi");
                         sharedPrefManager.saveSPString(Sp_mac, mac);
-                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        sharedPrefManager.saveSPString(Sp_suhu, suhu);
                         String gambar=sharedPrefManager.getGambar();
                         String Mac=sharedPrefManager.getMac();
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
-                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        String Suhu_ruangan=suhuruangan;
+                        String Suhu_hasil=suhuhasil.substring(0,5);
+                        sensor.Simpan(Mac,Suhu,Suhu_ruangan,Suhu_hasil,keterangan,gambar);
+                        Log.d("ruangan",Suhu_ruangan);
+                        Log.d("Hasil",Suhu_hasil);
+                        Log.d("suhu Asli",Suhu);
                         Perintah_palang();
+
                     }else if (suhudata > 38.00) {
-                        String datasuhu=suhu.substring(0,5);
+                        String datasuhu=suhuhasil.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
                         Keterangan.setText("Suhu Badan Anda Tinggi");
                         sharedPrefManager.saveSPString(Sp_mac, mac);
-                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        sharedPrefManager.saveSPString(Sp_suhu, suhu);
                         String gambar=sharedPrefManager.getGambar();
                         String Mac=sharedPrefManager.getMac();
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
-                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        String Suhu_ruangan=suhuruangan;
+                        String Suhu_hasil=suhuhasil.substring(0,5);
+                        sensor.Simpan(Mac,Suhu,Suhu_ruangan,Suhu_hasil,keterangan,gambar);
+                        Log.d("ruangan",Suhu_ruangan);
+                        Log.d("Hasil",Suhu_hasil);
+                        Log.d("suhu Asli",Suhu);
                         Perintah_palang();
+
                     }else if (suhudata > 40.00) {
-                        String datasuhu=suhu.substring(0,5);
+                        String datasuhu=suhuhasil.substring(0,5);
                         valueSuhu.setText(datasuhu + " °C");
                         Keterangan.setText("Suhu Badan Anda Tinggi");
                         sharedPrefManager.saveSPString(Sp_mac, mac);
-                        sharedPrefManager.saveSPString(Sp_suhu, datasuhu);
+                        sharedPrefManager.saveSPString(Sp_suhu, suhu);
                         String gambar=sharedPrefManager.getGambar();
                         String Mac=sharedPrefManager.getMac();
                         String Suhu=sharedPrefManager.getSuhu();
                         String keterangan=sharedPrefManager.getSp_keterangan();
-                        sensor.Simpan(Mac,Suhu,keterangan,gambar);
+                        String Suhu_ruangan=suhuruangan;
+                        String Suhu_hasil=suhuhasil.substring(0,5);
+                        sensor.Simpan(Mac,Suhu,Suhu_ruangan,Suhu_hasil,keterangan,gambar);
+                        Log.d("ruangan",Suhu_ruangan);
+                        Log.d("Hasil",Suhu_hasil);
+                        Log.d("suhu Asli",Suhu);
                         Perintah_palang();
+
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -338,33 +364,59 @@ public abstract class CameraActivity extends AppCompatActivity
 
     public  void Perintah_palang(){
         Koneksi_RMQ rmq = new Koneksi_RMQ(this);
-        String Sn="2c:f4:32:5e:1f:27";
+        String Sn="fc:f5:c4:97:07:ec";
         String Queue="mqtt-subscription-"+Sn+"qos0";
 //        String Pesan="1";
 
         String masker=sharedPrefManager.getSp_keterangan();
-        String Suhu=sharedPrefManager.getSuhu();
-        float suhudata=Float.parseFloat(Suhu);
-        if (masker.equals("Menggunakan Masker")||suhudata <=37){
+        String suhuhasil=sharedPrefManager.getSuhu();
+        float suhudata=Float.parseFloat(suhuhasil);
+        if(masker.equals("Menggunakan Masker")&&suhudata <=37.50){ //suhu normal
             rmq.setupConnectionFactory();
-            rmq.publish(Queue,"0");
-        }else  if(masker.equals("Tidak Menggunakan Masker")||suhudata <=37){
+            rmq.publish("1",Queue);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getsuhu();
+                }
+                //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
+            }, 3000);
+        }else if (masker.equals("Menggunakan Masker")&&suhudata >37.50){ // suhu tinggi
             rmq.setupConnectionFactory();
-            rmq.publish(Queue,"1");
-        }else if (masker.equals("Menggunakan Masker")||suhudata >=37){
+            rmq.publish("0",Queue);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getsuhu();
+                }
+                //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
+            }, 3000);
+        }else if (masker.equals("Tidak Menggunakan Masker")&&suhudata <=37.50) { //suhu normal
             rmq.setupConnectionFactory();
-            rmq.publish(Queue,"1");
-        } else if (masker.equals("Tidak Menggunakan Masker")||suhudata >=37){
+            rmq.publish("0",Queue);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getsuhu();
+                }
+                //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
+            }, 3000);
+        }else if (masker.equals("Tidak Menggunakan Masker")||suhudata >37.50){ // suhu tinggi
             rmq.setupConnectionFactory();
-            rmq.publish(Queue,"1");
-        }else {
+            rmq.publish("0",Queue);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    getsuhu();
+                }
+                //disini maksud 3000 nya itu adalah lama screen ini terdelay 3 detik,dalam satuan mili second
+            }, 3000);
+        }else{
             Toast.makeText(context, "Kondisi Belum Di temukan", Toast.LENGTH_SHORT).show();
         }
 
-        }
 
-
-
+    }
 
 
     private void onSwitchCamClick() {
